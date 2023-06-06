@@ -1,7 +1,9 @@
 mod openai;
 
 use std::{collections::HashMap, fs::File, io::Read};
+use std::io::Write;
 
+use futures::StreamExt;
 use openai::{chat_completions, Message};
 use clap::Parser;
 use serde::Deserialize;
@@ -58,6 +60,11 @@ async fn main() {
     if let Some(postfix) = &prompt.postfix {
         message.push_str(postfix)
     }
-    let response = chat_completions("gpt-3.5-turbo", vec![Message::new("system", &message)]).await;
-    dbg!(&response.content());
+    let stream = chat_completions("gpt-3.5-turbo", vec![Message::new("system", &message)]).await;
+    stream
+        .for_each(|resp| async move {
+            print!("{}", resp.content());
+            std::io::stdout().flush().unwrap();
+        })
+        .await;
 }

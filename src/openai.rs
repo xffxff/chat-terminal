@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use futures::{stream::StreamExt, Stream};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Message {
@@ -19,11 +20,17 @@ impl Message {
 pub(crate) struct ChatCompletionRequest {
     model: String,
     messages: Vec<Message>,
+    stream: bool
+}
+
+#[derive(Debug, Deserialize)]
+pub(crate) struct Delta {
+    pub(crate) content: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
 pub(crate) struct Choice {
-    message: Message,
+    delta: Delta,
 }
 
 #[derive(Debug, Deserialize)]
@@ -33,30 +40,48 @@ pub(crate) struct ChatCompletionResponse {
 
 impl ChatCompletionResponse {
     pub(crate) fn content(&self) -> &str {
-        &self.choices[0].message.content
+        self.choices[0].delta.content.as_ref().map_or("", |s| s)
     }
 }
 
 pub(crate) async fn chat_completions(
     model: &str,
     messages: Vec<Message>,
-) -> ChatCompletionResponse {
+) -> impl Stream<Item=ChatCompletionResponse> {
     let client = reqwest::Client::new();
     let request = ChatCompletionRequest {
         model: model.to_string(),
         messages,
+        stream: true
     };
     let api_key = std::env::var("OPENAI_API_KEY").unwrap();
 
-    let response = client
+    let mut stream = client
         .post("https://api.openai.com/v1/chat/completions")
         .header("Authorization", format!("Bearer {}", api_key))
         .timeout(std::time::Duration::from_secs(60))
         .json(&request)
         .send()
         .await
-        .unwrap();
+        .unwrap()
+        .bytes_stream();
 
-    let chat_completion_response: ChatCompletionResponse = response.json().await.unwrap();
-    chat_completion_response
+    let stream = async_stream::stream! {
+        while let Some(item) = stream.next().await {
+            let item = item.unwrap();
+            let item_str = std::str::from_utf8(&item).unwrap();
+            for chunk in item_str.split('\n').filter(|chunk| chunk.starts_with("data:")) {
+                let chunk = chunk.trim_start_matches("data: ");
+                if chunk.starts_with("[DONE]") {
+                    return;
+                }
+                let chat_completion_response: ChatCompletionResponse = serde_json::from_str(chunk).unwrap();
+                yield chat_completion_response
+            }
+        }
+    };
+    stream
+
+    // let chat_completion_response: ChatCompletionResponse = stream.json().await.unwrap();
+    // chat_completion_response
 }
