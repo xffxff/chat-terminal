@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use futures::{stream::StreamExt, Stream};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Message {
@@ -20,7 +20,7 @@ impl Message {
 pub(crate) struct ChatCompletionRequest {
     model: String,
     messages: Vec<Message>,
-    stream: bool
+    stream: bool,
 }
 
 #[derive(Debug, Deserialize)]
@@ -47,12 +47,12 @@ impl ChatCompletionResponse {
 pub(crate) async fn chat_completions(
     model: &str,
     messages: Vec<Message>,
-) -> impl Stream<Item=ChatCompletionResponse> {
+) -> impl Stream<Item = ChatCompletionResponse> {
     let client = reqwest::Client::new();
     let request = ChatCompletionRequest {
         model: model.to_string(),
         messages,
-        stream: true
+        stream: true,
     };
     let api_key = std::env::var("OPENAI_API_KEY").unwrap();
 
@@ -81,7 +81,4 @@ pub(crate) async fn chat_completions(
         }
     };
     stream
-
-    // let chat_completion_response: ChatCompletionResponse = stream.json().await.unwrap();
-    // chat_completion_response
 }

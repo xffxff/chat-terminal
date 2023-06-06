@@ -1,19 +1,18 @@
 mod openai;
 
-use std::{collections::HashMap, fs::File, io::Read};
 use std::io::Write;
+use std::{collections::HashMap, fs::File, io::Read};
 
+use clap::Parser;
 use futures::StreamExt;
 use openai::{chat_completions, Message};
-use clap::Parser;
 use serde::Deserialize;
-
 
 #[derive(Debug, Deserialize)]
 struct Prompt {
     description: String,
     prefix: Option<String>,
-    postfix: Option<String>
+    postfix: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -33,7 +32,6 @@ impl Config {
     }
 }
 
-
 #[derive(Parser)]
 struct Cli {
     mode: String,
@@ -46,7 +44,8 @@ async fn main() {
 
     let mut file = File::open("config.toml").expect("Failed to open file");
     let mut contents = String::new();
-    file.read_to_string(&mut contents).expect("Failed to read file");
+    file.read_to_string(&mut contents)
+        .expect("Failed to read file");
 
     let config: Config = toml::from_str(&contents).expect("Failed to parse TOML");
 
