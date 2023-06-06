@@ -1,0 +1,8 @@
+[prompts]
+[prompts.to-ch]
+description = "Translate the text into Chinese"
+prefix = "Please translate the following text into Chinese: "
+
+[prompts.to-en]
+description = "Translate the text into English"
+prefix = "Please translate the following text into English: "
