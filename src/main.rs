@@ -1,9 +1,11 @@
 mod openai;
 
+use anyhow::{Context, Result};
 use std::io::Write;
 use std::{collections::HashMap, fs::File, io::Read};
 
 use clap::Parser;
+use futures::pin_mut;
 use futures::StreamExt;
 use openai::{chat_completions, Message};
 use serde::Deserialize;
@@ -39,17 +41,19 @@ struct Cli {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    let mut file = File::open("config.toml").expect("Failed to open file");
+    let mut file = File::open("config.toml").context("Failed to open config file")?;
     let mut contents = String::new();
     file.read_to_string(&mut contents)
-        .expect("Failed to read file");
+        .context("Failed to read config file")?;
 
-    let config: Config = toml::from_str(&contents).expect("Failed to parse TOML");
+    let config: Config = toml::from_str(&contents).context("Failed to parse TOML")?;
 
-    let prompt = config.get_prompt(&cli.mode).expect("Failed to find prompt");
+    let prompt = config
+        .get_prompt(&cli.mode)
+        .context(format!("Failed to find prompt: {:?}", &cli.mode))?;
 
     let mut message = String::new();
     if let Some(prefix) = &prompt.prefix {
@@ -59,11 +63,12 @@ async fn main() {
     if let Some(postfix) = &prompt.postfix {
         message.push_str(postfix)
     }
-    let stream = chat_completions("gpt-3.5-turbo", vec![Message::new("system", &message)]).await;
-    stream
-        .for_each(|resp| async move {
-            print!("{}", resp.content());
-            std::io::stdout().flush().unwrap();
-        })
-        .await;
+    let stream = chat_completions("gpt-3.5-turbo", vec![Message::new("system", &message)]).await?;
+    pin_mut!(stream);
+    while let Some(resp) = stream.next().await {
+        let resp = resp?;
+        print!("{}", resp.content());
+        std::io::stdout().flush()?;
+    }
+    Ok(())
 }

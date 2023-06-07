@@ -1,3 +1,4 @@
+use anyhow::{Context, Result};
 use futures::{stream::StreamExt, Stream};
 use serde::{Deserialize, Serialize};
 
@@ -47,14 +48,15 @@ impl ChatCompletionResponse {
 pub(crate) async fn chat_completions(
     model: &str,
     messages: Vec<Message>,
-) -> impl Stream<Item = ChatCompletionResponse> {
+) -> Result<impl Stream<Item = Result<ChatCompletionResponse>>> {
     let client = reqwest::Client::new();
     let request = ChatCompletionRequest {
         model: model.to_string(),
         messages,
         stream: true,
     };
-    let api_key = std::env::var("OPENAI_API_KEY").unwrap();
+    let api_key =
+        std::env::var("OPENAI_API_KEY").context("Env variable `OPENAI_API_KEY` not found")?;
 
     let mut stream = client
         .post("https://api.openai.com/v1/chat/completions")
@@ -62,14 +64,13 @@ pub(crate) async fn chat_completions(
         .timeout(std::time::Duration::from_secs(60))
         .json(&request)
         .send()
-        .await
-        .unwrap()
+        .await?
         .bytes_stream();
 
     let stream = async_stream::stream! {
         while let Some(item) = stream.next().await {
-            let item = item.unwrap();
-            let item_str = std::str::from_utf8(&item).unwrap();
+            let item = item?;
+            let item_str = std::str::from_utf8(&item).context(format!("Failed to convert bytes to string: {:?}", item))?;
             for chunk in item_str.split('\n').filter(|chunk| chunk.starts_with("data:")) {
                 // To be able to deserialize the item_str, we need to split it into chunks
                 // In general, the chunks look like this:
@@ -108,10 +109,11 @@ pub(crate) async fn chat_completions(
                 if chunk.starts_with("[DONE]") {
                     return;
                 }
-                let chat_completion_response: ChatCompletionResponse = serde_json::from_str(chunk).unwrap();
-                yield chat_completion_response
+                let chat_completion_response: ChatCompletionResponse = serde_json::from_str(chunk)
+                    .context(format!("Failed to deserialize chunk: {:?}", chunk))?;
+                yield Ok(chat_completion_response)
             }
         }
     };
-    stream
+    Ok(stream)
 }
