@@ -60,7 +60,7 @@ async fn main() -> Result<()> {
         message.push_str(prefix)
     }
     message.push_str(&cli.message);
-    if let Some(postfix) = &prompt.postfix {
+    if let Some(postfix) = &prompt.suffix {
         message.push_str(postfix)
     }
     let stream = chat_completions("gpt-3.5-turbo", vec![Message::new("system", &message)]).await?;
