@@ -44,7 +44,7 @@ struct Cli {
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    let mut file = File::open("config.toml").context("Failed to open config file")?;
+    let mut file = File::open(".chatconfig.toml").context("Failed to open config file")?;
     let mut contents = String::new();
     file.read_to_string(&mut contents)
         .context("Failed to read config file")?;
