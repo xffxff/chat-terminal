@@ -14,7 +14,7 @@ use serde::Deserialize;
 struct Prompt {
     description: String,
     prefix: Option<String>,
-    postfix: Option<String>,
+    suffix: Option<String>,
 }
 
 #[derive(Debug, Deserialize)]

@@ -6,3 +6,7 @@ prefix = "Please translate the following text into Chinese: "
 [prompts.to-en]
 description = "Translate the text into English"
 prefix = "Please translate the following text into English: "
+
+[prompts.edit]
+description = "Edit the text to make it more natural"
+prefix = "Please edit the following text to make it more natural: "
