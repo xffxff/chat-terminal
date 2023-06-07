@@ -2,6 +2,7 @@ mod openai;
 
 use anyhow::{Context, Result};
 use std::io::Write;
+use std::path::PathBuf;
 use std::{collections::HashMap, fs::File, io::Read};
 
 use clap::Parser;
@@ -40,16 +41,45 @@ struct Cli {
     message: String,
 }
 
+fn read_config_file() -> Result<Config> {
+    let mut contents = String::new();
+    let mut file_found = false;
+
+    // Try to read .chatconfig.toml first
+    if let Ok(mut file) = File::open(".chatconfig.toml") {
+        file.read_to_string(&mut contents)
+            .context("Failed to read config file")?;
+        file_found = true;
+    }
+
+    // If .chatconfig.toml is not found, try to read ~/.config/chat/config.toml
+    if !file_found {
+        let mut path = PathBuf::new();
+        path.push(std::env::var("HOME").context("Failed to get HOME directory")?);
+        path.push(".config");
+        path.push("chat");
+        path.push("config.toml");
+
+        if let Ok(mut file) = File::open(path) {
+            file.read_to_string(&mut contents)
+                .context("Failed to read config file")?;
+            file_found = true;
+        }
+    }
+
+    if !file_found {
+        return Err(anyhow::anyhow!("Failed to find config file, make sure you have a .chatconfig.toml or ~/.config/chat/config.toml file"));
+    }
+
+    let config: Config = toml::from_str(&contents).context("Failed to parse TOML")?;
+    Ok(config)
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();
 
-    let mut file = File::open(".chatconfig.toml").context("Failed to open config file")?;
-    let mut contents = String::new();
-    file.read_to_string(&mut contents)
-        .context("Failed to read config file")?;
-
-    let config: Config = toml::from_str(&contents).context("Failed to parse TOML")?;
+    let config = read_config_file()?;
 
     let prompt = config
         .get_prompt(&cli.mode)
