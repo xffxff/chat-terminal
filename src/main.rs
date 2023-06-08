@@ -1,6 +1,7 @@
 mod openai;
 
 use anyhow::{Context, Result};
+use std::env;
 use std::io::Write;
 use std::path::PathBuf;
 use std::{collections::HashMap, fs::File, io::Read};
@@ -77,10 +78,23 @@ fn read_config_file() -> Result<Config> {
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    let cli = Cli::parse();
-
     let config = read_config_file()?;
 
+    // FIXME: This is a hacky way to check if the first argument is "list"
+    // If using clap like `cargo run -- list`, it always complains about missing arguments `MODE` and `MESSAGE`
+    // and I don't want to make them optional
+    let args: Vec<String> = env::args().collect();
+    if args.len() > 1 && args[1] == "list" {
+        // The first argument is "list"
+        // Show the name and descriptions of all the prompts
+        println!("Available prompts:");
+        for (name, prompt) in &config.prompts.prompts {
+            println!("    {}: {}", name, prompt.description);
+        }
+        return Ok(());
+    }
+
+    let cli = Cli::parse();
     let prompt = config
         .get_prompt(&cli.mode)
         .context(format!("Failed to find prompt: {:?}", &cli.mode))?;
@@ -93,6 +107,7 @@ async fn main() -> Result<()> {
     if let Some(postfix) = &prompt.suffix {
         message.push_str(postfix)
     }
+    dbg!(&message);
     let stream = chat_completions("gpt-3.5-turbo", vec![Message::new("system", &message)]).await?;
     pin_mut!(stream);
     while let Some(resp) = stream.next().await {
