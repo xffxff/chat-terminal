@@ -107,7 +107,6 @@ async fn main() -> Result<()> {
     if let Some(postfix) = &prompt.suffix {
         message.push_str(postfix)
     }
-    dbg!(&message);
     let stream = chat_completions("gpt-3.5-turbo", vec![Message::new("system", &message)]).await?;
     pin_mut!(stream);
     while let Some(resp) = stream.next().await {
