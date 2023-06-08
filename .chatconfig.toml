@@ -1,15 +1,15 @@
 [prompts]
 [prompts.to-ch]
 description = "Translate the text into Chinese"
-prefix = "Please translate the following text into Chinese: "
+prefix = "Please translate the following text into Chinese: \n\n"
 
 [prompts.to-en]
 description = "Translate the text into English"
-prefix = "Please translate the following text into English: "
+prefix = "Please translate the following text into English: \n\n"
 
 [prompts.edit]
 description = "Edit the text to make it more natural"
-prefix = "Please edit the following text to make it more natural: "
+prefix = "Please edit the following text to make it more natural: \n\n"
 
 [prompts.commit]
 description = "Modify the commit message to make it more compliant with commit message specifications"
