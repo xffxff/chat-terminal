@@ -6,7 +6,13 @@ dry-prompt allows users to predefine their preferred prompt prefix or suffix, av
 
 ## Usage
 
-To get started, define your desired prompt prefix or suffix within the `.chatconfig.toml` configuration file:
+Clone the repository and install to your local machine:
+```bash
+git clone https://github.com/xffxff/dry-prompt.git
+cargo install --path .
+```
+
+To get started, move the `.chatconfig.toml` file to `~/.config/chat/config.toml` or define your desired prompt prefix or suffix within the `~/.config/chat/config.toml` configuration file:
 ```toml
 [prompts]
 [prompts.to-ch]
@@ -25,8 +31,8 @@ export OPENAI_API_KEY="your-api-key"
 
 Now, quickly and easily access your predefined prompts with these simple commands:
 ```bash
-cargo run -- --to-ch "hello world"
+chat to-ch "hello world"
 ```
 ```bash
-cargo run -- --to-en "你好世界"
+chat to-en "你好世界"
 ```
