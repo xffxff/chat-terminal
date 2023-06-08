@@ -10,3 +10,7 @@ prefix = "Please translate the following text into English: "
 [prompts.edit]
 description = "Edit the text to make it more natural"
 prefix = "Please edit the following text to make it more natural: "
+
+[prompts.commit]
+description = "Modify the commit message to make it more compliant with commit message specifications"
+prefix = "The following is a git repository commit message. Help me modify it to make it more compliant with commit message specifications."
