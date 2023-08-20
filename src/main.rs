@@ -99,15 +99,20 @@ async fn main() -> Result<()> {
         .get_prompt(&cli.mode)
         .context(format!("Failed to find prompt: {:?}", &cli.mode))?;
 
-    let mut message = String::new();
+    process_message(prompt, &cli.message).await?;
+    Ok(())
+}
+
+async fn process_message(prompt: &Prompt, message: &str) -> Result<()> {
+    let mut gpt_message = String::new();
     if let Some(prefix) = &prompt.prefix {
-        message.push_str(prefix)
+        gpt_message.push_str(prefix)
     }
-    message.push_str(&cli.message);
+    gpt_message.push_str(message);
     if let Some(postfix) = &prompt.suffix {
-        message.push_str(postfix)
+        gpt_message.push_str(postfix)
     }
-    let stream = chat_completions("gpt-3.5-turbo", vec![Message::new("system", &message)]).await?;
+    let stream = chat_completions("gpt-3.5-turbo", vec![Message::new("system", &gpt_message)]).await?;
     pin_mut!(stream);
     while let Some(resp) = stream.next().await {
         let resp = resp?;
