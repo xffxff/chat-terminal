@@ -34,3 +34,17 @@ chat to-ch "hello world"
 ```bash
 chat to-en "你好世界"
 ```
+### Interactive Mode
+chat-terminal also includes an interactive mode. This mode allows you to enter your prompts directly into the terminal and receive responses in real time, providing a more engaging and dynamic user experience.
+
+Here's an example of how to use the interactive mode:
+```
+chat to-ch
+
+> hello world
+你好，世界
+> How are you?
+你好吗？
+```
+> *NOTE:* Please be aware that the interactive mode is different from a typical chat session on the ChatGPT web interface. Unlike the web interface, the interactive mode does not retain the history of previous messages. It operates more like a loop of the `chat to-ch xxx` command. Each prompt is processed independently and does not have context from the previous prompts.
+
