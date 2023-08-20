@@ -155,6 +155,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "chat-terminal"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-stream",
+ "clap",
+ "futures",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "serde_toml",
+ "tokio",
+ "toml",
+]
+
+[[package]]
 name = "clap"
 version = "4.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -217,22 +233,6 @@ name = "core-foundation-sys"
 version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e496a50fda8aacccc86d7529e2c1e0892dbd0f898a6b5645b5561b89c3210efa"
-
-[[package]]
-name = "dry-prompt"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-stream",
- "clap",
- "futures",
- "reqwest",
- "serde",
- "serde_json",
- "serde_toml",
- "tokio",
- "toml",
-]
 
 [[package]]
 name = "encoding_rs"

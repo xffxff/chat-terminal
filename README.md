@@ -1,18 +1,16 @@
-# dry-prompt (do not repeat your prompt)
+# chat-terminal
 
-Finding myself constantly repeating the same prompt when using ChatGPT, such as "Please translate the following text into Chinese: " or "Please edit the following text to make it more natural" was becoming frustrating. To simplify the process without opening new tabs or creating a new session for each simple prompt when using ChatGPT on the web, I decided to create a CLI tool that can be used within the terminal called "dry-prompt."
-
-dry-prompt allows users to predefine their preferred prompt prefix or suffix, avoiding repetitive, time-consuming input.
+The `chat-terminal` is a CLI tool designed to simplify the process of using repetitive prompts with ChatGPT. It allows users to predefine their preferred prompt prefix or suffix, thus eliminating the need for repetitive, time-consuming input. This is particularly handy when you don't want to open new tabs or create a new session for each simple prompt when using ChatGPT on the web.
 
 ## Usage
 
-Clone the repository and install to your local machine:
+First, clone the repository and install it on your local machine using the following commands:
 ```bash
-git clone https://github.com/xffxff/dry-prompt.git
+git clone https://github.com/xffxff/chat-terminal.git
 cargo install --path .
 ```
 
-To get started, move the `.chatconfig.toml` file to `~/.config/chat/config.toml` or define your desired prompt prefix or suffix within the `~/.config/chat/config.toml` configuration file:
+To configure `chat-terminal`, move the `.chatconfig.toml` file to `~/.config/chat/config.toml`. Alternatively, you can define your desired prompt prefix or suffix within the `~/.config/chat/config.toml` configuration file:
 ```toml
 [prompts]
 [prompts.to-ch]
@@ -24,12 +22,12 @@ description = "Translate the text into English"
 prefix = "Please translate the following text into English: "
 ```
 
-Before using the tool, make sure to set the `OPENAI_API_KEY` environment variable to your OpenAI API key:
+Before you start using `chat-terminal`, ensure to set the `OPENAI_API_KEY` environment variable to your OpenAI API key:
 ```bash
 export OPENAI_API_KEY="your-api-key" 
 ```
 
-Now, quickly and easily access your predefined prompts with these simple commands:
+With `chat-terminal`, you can now access your predefined prompts quickly and easily using these simple commands:
 ```bash
 chat to-ch "hello world"
 ```
