@@ -39,7 +39,7 @@ impl Config {
 #[derive(Parser)]
 struct Cli {
     mode: String,
-    message: String,
+    message: Option<String>,
 }
 
 fn read_config_file() -> Result<Config> {
@@ -99,8 +99,20 @@ async fn main() -> Result<()> {
         .get_prompt(&cli.mode)
         .context(format!("Failed to find prompt: {:?}", &cli.mode))?;
 
-    process_message(prompt, &cli.message).await?;
-    Ok(())
+    if let Some(message) = &cli.message {
+        process_message(prompt, message).await?;
+        return Ok(());
+    }
+
+    // interactive mode
+    let mut message = String::new();
+    loop {
+        print!("\n> ");
+        std::io::stdout().flush()?;
+        std::io::stdin().read_line(&mut message)?;
+        process_message(prompt, &message).await?;
+        message.clear();
+    }
 }
 
 async fn process_message(prompt: &Prompt, message: &str) -> Result<()> {
