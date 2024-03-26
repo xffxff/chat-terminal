@@ -26,8 +26,16 @@ struct Prompts {
 }
 
 #[derive(Debug, Deserialize)]
+struct API {
+    model: String,
+    api_key: String,
+    base_url: String,
+}
+
+#[derive(Debug, Deserialize)]
 struct Config {
     prompts: Prompts,
+    api: API,
 }
 
 impl Config {
@@ -100,7 +108,7 @@ async fn main() -> Result<()> {
         .context(format!("Failed to find prompt: {:?}", &cli.mode))?;
 
     if let Some(message) = &cli.message {
-        process_message(prompt, message).await?;
+        process_message(prompt, message, &config.api).await?;
         return Ok(());
     }
 
@@ -110,12 +118,12 @@ async fn main() -> Result<()> {
         print!("\n> ");
         std::io::stdout().flush()?;
         std::io::stdin().read_line(&mut message)?;
-        process_message(prompt, &message).await?;
+        process_message(prompt, &message, &config.api).await?;
         message.clear();
     }
 }
 
-async fn process_message(prompt: &Prompt, message: &str) -> Result<()> {
+async fn process_message(prompt: &Prompt, message: &str, api: &API) -> Result<()> {
     let mut gpt_message = String::new();
     if let Some(prefix) = &prompt.prefix {
         gpt_message.push_str(prefix)
@@ -124,7 +132,8 @@ async fn process_message(prompt: &Prompt, message: &str) -> Result<()> {
     if let Some(postfix) = &prompt.suffix {
         gpt_message.push_str(postfix)
     }
-    let stream = chat_completions("gpt-3.5-turbo", vec![Message::new("system", &gpt_message)]).await?;
+    let stream =
+        chat_completions(&api.model, vec![Message::new("system", &gpt_message)], api).await?;
     pin_mut!(stream);
     while let Some(resp) = stream.next().await {
         let resp = resp?;

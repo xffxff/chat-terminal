@@ -2,6 +2,8 @@ use anyhow::{Context, Result};
 use futures::{stream::StreamExt, Stream};
 use serde::{Deserialize, Serialize};
 
+use crate::API;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub(crate) struct Message {
     role: String,
@@ -48,6 +50,7 @@ impl ChatCompletionResponse {
 pub(crate) async fn chat_completions(
     model: &str,
     messages: Vec<Message>,
+    api: &API,
 ) -> Result<impl Stream<Item = Result<ChatCompletionResponse>>> {
     let client = reqwest::Client::new();
     let request = ChatCompletionRequest {
@@ -55,12 +58,10 @@ pub(crate) async fn chat_completions(
         messages,
         stream: true,
     };
-    let api_key =
-        std::env::var("OPENAI_API_KEY").context("Env variable `OPENAI_API_KEY` not found")?;
 
     let mut stream = client
-        .post("https://api.openai.com/v1/chat/completions")
-        .header("Authorization", format!("Bearer {}", api_key))
+        .post(format!("{}/chat/completions", api.base_url))
+        .header("Authorization", format!("Bearer {}", api.api_key))
         .timeout(std::time::Duration::from_secs(60))
         .json(&request)
         .send()
